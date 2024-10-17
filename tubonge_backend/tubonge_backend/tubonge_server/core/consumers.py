@@ -11,7 +11,19 @@ class MyConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-        self.send(text_data=json.dumps({
-            'message': message
-        }))
+        action = text_data_json.get('action')
+
+        if action == 'offer' or action == 'answer':
+            self.send(text_data=json.dumps({
+                'action': action,
+                'sdp': text_data_json['sdp']
+            }))
+        elif action == 'candidate':
+            self.send(text_data=json.dumps({
+                'action': action,
+                'candidate': text_data_json['candidate']
+            }))
+        else:
+            self.send(text_data=json.dumps({
+                'message': 'Unknown action'
+            }))

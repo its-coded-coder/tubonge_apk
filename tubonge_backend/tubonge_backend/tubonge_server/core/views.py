@@ -16,7 +16,7 @@ def create_room(request):
 @csrf_exempt
 def join_room(request, room_id):
     room = get_object_or_404(Room, id=room_id)
-    return JsonResponse({'room_id': room.id, 'name': room.name})
+    return JsonResponse({'room_id': room.id, 'name': room.name, 'created_at': room.created_at})
 
 @csrf_exempt
 def send_message(request, room_id):
@@ -26,3 +26,10 @@ def send_message(request, room_id):
         content = request.POST.get('content')
         message = Message.objects.create(room=room, user=user, content=content)
         return JsonResponse({'message_id': message.id, 'content': message.content, 'timestamp': message.timestamp})
+
+@csrf_exempt
+def meeting_history(request, user_id):
+    user = get_object_or_404(CustomUser, id=user_id)
+    rooms = Room.objects.filter(messages__user=user).distinct()
+    history = [{'room_id': room.id, 'name': room.name, 'created_at': room.created_at, 'ended_at': room.ended_at} for room in rooms]
+    return JsonResponse({'history': history})
