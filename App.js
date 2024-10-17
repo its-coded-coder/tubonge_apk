@@ -15,6 +15,7 @@ const App = () => {
         <Stack.Navigator initialRouteName="Login">
           <Stack.Screen name="Register" component={RegisterScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="VideoConference" component={VideoConferenceScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </AuthProvider>
