@@ -19,4 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/core/', include('tubonge_backend.tubonge_server.core.urls')),
+    path('api/users/', include('tubonge_backend.tubonge_server.users.urls')),
 ]

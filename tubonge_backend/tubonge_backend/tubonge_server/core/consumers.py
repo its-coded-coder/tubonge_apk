@@ -23,6 +23,16 @@ class MyConsumer(WebsocketConsumer):
                 'action': action,
                 'candidate': text_data_json['candidate']
             }))
+        elif action == 'join':
+            self.send(text_data=json.dumps({
+                'action': 'join',
+                'room': text_data_json['room']
+            }))
+        elif action == 'leave':
+            self.send(text_data=json.dumps({
+                'action': 'leave',
+                'room': text_data_json['room']
+            }))
         else:
             self.send(text_data=json.dumps({
                 'message': 'Unknown action'

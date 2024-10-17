@@ -4,7 +4,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Room, Message
-from users.models import CustomUser
+from tubonge_backend.tubonge_server.users.models import CustomUser
 
 @csrf_exempt
 def create_room(request):

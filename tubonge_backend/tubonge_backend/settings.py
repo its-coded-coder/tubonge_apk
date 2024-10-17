@@ -38,8 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'channels',
-    'tubonge_server.core',
-    'tubonge_server.users',
+    'tubonge_backend.tubonge_server.core',
+    'tubonge_backend.tubonge_server.users',
 ]
 
 ASGI_APPLICATION = 'tubonge_backend.asgi.application'
@@ -87,8 +87,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'tubonge_db',
-        'USER': 'your_db_user',
-        'PASSWORD': 'your_db_password',
+    'USER': 'postgres',
+    'PASSWORD': 'password',
         'HOST': 'localhost',
         'PORT': '5432',
     }
