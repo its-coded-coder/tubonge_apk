@@ -1,0 +1,336 @@
+
+### Documentation for "Tubonge" Project Setup
+
+#### Frontend Setup
+
+1. **Create a new React Native Expo project:**
+    - Open a terminal and run the following commands to create a new React Native Expo project:
+    ```bash
+    npx create-expo-app tubonge_app
+    cd tubonge_app
+    npm install
+    ```
+
+2. **Integrate Firebase for user authentication:**
+    - Install Firebase SDK:
+    ```bash
+    npm install @react-native-firebase/app @react-native-firebase/auth
+    ```
+    - Initialize Firebase in your project:
+    ```javascript
+    // firebaseConfig.js
+    import { initializeApp } from 'firebase/app';
+    import { getAuth } from 'firebase/auth';
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    export { auth };
+    ```
+    - Implement user registration and login screens:
+    ```javascript
+    // screens/RegisterScreen.js
+    import React, { useState } from 'react';
+    import { View, TextInput, Button, Text } from 'react-native';
+    import { auth } from '../firebaseConfig';
+    import { createUserWithEmailAndPassword } from 'firebase/auth';
+
+    const RegisterScreen = () => {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
+
+      const handleRegister = async () => {
+        try {
+          await createUserWithEmailAndPassword(auth, email, password);
+        } catch (err) {
+          setError(err.message);
+        }
+      };
+
+      return (
+        <View>
+          <TextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <TextInput
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+          <Button title="Register" onPress={handleRegister} />
+          {error ? <Text>{error}</Text> : null}
+        </View>
+      );
+    };
+
+    export default RegisterScreen;
+    ```
+
+    ```javascript
+    // screens/LoginScreen.js
+    import React, { useState } from 'react';
+    import { View, TextInput, Button, Text } from 'react-native';
+    import { auth } from '../firebaseConfig';
+    import { signInWithEmailAndPassword } from 'firebase/auth';
+
+    const LoginScreen = () => {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
+
+      const handleLogin = async () => {
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+        } catch (err) {
+          setError(err.message);
+        }
+      };
+
+      return (
+        <View>
+          <TextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <TextInput
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+          <Button title="Login" onPress={handleLogin} />
+          {error ? <Text>{error}</Text> : null}
+        </View>
+      );
+    };
+
+    export default LoginScreen;
+    ```
+
+    - Handle user session management:
+    ```javascript
+    // AuthProvider.js
+    import React, { createContext, useState, useEffect } from 'react';
+    import { onAuthStateChanged } from 'firebase/auth';
+    import { auth } from './firebaseConfig';
+
+    export const AuthContext = createContext();
+
+    export const AuthProvider = ({ children }) => {
+      const [user, setUser] = useState(null);
+
+      useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (user) {
+            setUser(user);
+          } else {
+            setUser(null);
+          }
+        });
+
+        return () => unsubscribe();
+      }, []);
+
+      return (
+        <AuthContext.Provider value={{ user }}>
+          {children}
+        </AuthContext.Provider>
+      );
+    };
+    ```
+
+    - Update `App.js` to use the `AuthProvider` and set up navigation:
+    ```javascript
+    // App.js
+    import React from 'react';
+    import { NavigationContainer } from '@react-navigation/native';
+    import { createStackNavigator } from '@react-navigation/stack';
+    import { AuthProvider } from './AuthProvider';
+    import RegisterScreen from './screens/RegisterScreen';
+    import LoginScreen from './screens/LoginScreen';
+
+    const Stack = createStackNavigator();
+
+    const App = () => {
+      return (
+        <AuthProvider>
+          <NavigationContainer>
+            <Stack.Navigator initialRouteName="Login">
+              <Stack.Screen name="Register" component={RegisterScreen} />
+              <Stack.Screen name="Login" component={LoginScreen} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </AuthProvider>
+      );
+    };
+
+    export default App;
+    ```
+
+#### Backend Setup
+
+1. **Create a new Python Django project:**
+    - Open a terminal and run the following commands to create a new Django project:
+    ```bash
+    django-admin startproject tubonge_server
+    cd tubonge_server
+    python3 manage.py startapp core
+    ```
+
+2. **Set up PostgreSQL as the database:**
+    - Install PostgreSQL and `psycopg2`:
+    ```bash
+    sudo apt-get install postgresql postgresql-contrib
+    pip install psycopg2-binary
+    ```
+    - Configure Django to use PostgreSQL:
+    ```python
+    # settings.py
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'tubonge_db',
+            'USER': 'your_actual_username',
+            'PASSWORD': 'your_actual_password',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
+    ```
+
+3. **Implement user authentication and session management:**
+    - Create a new Django app for user authentication:
+    ```bash
+    python3 manage.py startapp users
+    ```
+    - Add the `users` app to the `INSTALLED_APPS` list in `settings.py`:
+    ```python
+    # settings.py
+    INSTALLED_APPS = [
+        ...
+        'users',
+    ]
+    ```
+    - Create models for user authentication in `users/models.py`:
+    ```python
+    # users/models.py
+    from django.contrib.auth.models import AbstractUser
+
+    class CustomUser(AbstractUser):
+        pass
+    ```
+    - Update `users/admin.py` to register the `CustomUser` model:
+    ```python
+    # users/admin.py
+    from django.contrib import admin
+    from .models import CustomUser
+
+    admin.site.register(CustomUser)
+    ```
+    - Update `settings.py` to use the custom user model:
+    ```python
+    # settings.py
+    AUTH_USER_MODEL = 'users.CustomUser'
+    ```
+    - Create and apply migrations:
+    ```bash
+    python3 manage.py makemigrations
+    python3 manage.py migrate
+    ```
+
+4. **Set up basic WebRTC signaling:**
+    - Install Django Channels:
+    ```bash
+    pip install channels
+    ```
+    - Update `settings.py` to include Channels:
+    ```python
+    # settings.py
+    INSTALLED_APPS = [
+        ...
+        'channels',
+    ]
+
+    ASGI_APPLICATION = 'tubonge_server.asgi.application'
+    ```
+    - Create an `asgi.py` file in the project directory:
+    ```python
+    # asgi.py
+    import os
+    from django.core.asgi import get_asgi_application
+    from channels.routing import ProtocolTypeRouter, URLRouter
+    from channels.auth import AuthMiddlewareStack
+    from django.urls import path
+    from core import consumers
+
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tubonge_server.settings')
+
+    application = ProtocolTypeRouter({
+        "http": get_asgi_application(),
+        "websocket": AuthMiddlewareStack(
+            URLRouter([
+                path("ws/some_path/", consumers.MyConsumer.as_asgi()),
+            ])
+        ),
+    })
+    ```
+    - Create a `consumers.py` file in the `core` app:
+    ```python
+    # core/consumers.py
+    import json
+    from channels.generic.websocket import WebsocketConsumer
+
+    class MyConsumer(WebsocketConsumer):
+        def connect(self):
+            self.accept()
+
+        def disconnect(self, close_code):
+            pass
+
+        def receive(self, text_data):
+            text_data_json = json.loads(text_data)
+            message = text_data_json['message']
+            self.send(text_data=json.dumps({
+                'message': message
+            }))
+    ```
+    - Update `routing.py` in the `core` app:
+    ```python
+    # core/routing.py
+    from django.urls import path
+    from . import consumers
+
+    websocket_urlpatterns = [
+        path('ws/some_path/', consumers.MyConsumer.as_asgi()),
+    ]
+    ```
+    - Update `urls.py` in the project directory:
+    ```python
+    # urls.py
+    from django.contrib import admin
+    from django.urls import path, include
+
+    urlpatterns = [
+        path('admin/', admin.site.urls),
+        path('core/', include('core.urls')),
+    ]
+    ```
+
+#### Hosting Setup
+
+1. **Set up hosting on render.com:**
+    - Create an account on render.com and configure the free tier hosting for the backend.
