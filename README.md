@@ -1,54 +1,252 @@
-<<<<<<< HEAD
-# tubonge_apk
-=======
-# Welcome to your Expo app 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+### Documentation for "Tubonge" Project Setup
 
-## Get started
+#### Frontend Setup
 
-1. Install dependencies
+1. **Create a new React Native Expo project:**
+    - Open a terminal and run the following commands to create a new React Native Expo project:
+    ```bash
+    npx create-expo-app tubonge_app
+    cd tubonge_app
+    npm install
+    ```
 
-   ```bash
-   npm install
-   ```
+2. **Integrate Firebase for user authentication:**
+    - Install Firebase SDK:
+    ```bash
+    npm install @react-native-firebase/app @react-native-firebase/auth
+    ```
+    - Initialize Firebase in your project:
+    ```javascript
+    // firebaseConfig.js
+    import { initializeApp } from 'firebase/app';
+    import { getAuth } from 'firebase/auth';
 
-2. Start the app
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
-   ```bash
-    npx expo start
-   ```
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-In the output, you'll find options to open the app in a
+    export { auth };
+    ```
+    - Implement user registration and login screens:
+    ```javascript
+    // screens/RegisterScreen.js
+    import React, { useState } from 'react';
+    import { View, TextInput, Button, Text } from 'react-native';
+    import { auth } from '../firebaseConfig';
+    import { createUserWithEmailAndPassword } from 'firebase/auth';
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+    const RegisterScreen = () => {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+      const handleRegister = async () => {
+        try {
+          await createUserWithEmailAndPassword(auth, email, password);
+        } catch (err) {
+          setError(err.message);
+        }
+      };
 
-## Get a fresh project
+      return (
+        <View>
+          <TextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <TextInput
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+          <Button title="Register" onPress={handleRegister} />
+          {error ? <Text>{error}</Text> : null}
+        </View>
+      );
+    };
 
-When you're ready, run:
+    export default RegisterScreen;
+    ```
 
-```bash
-npm run reset-project
-```
+    ```javascript
+    // screens/LoginScreen.js
+    import React, { useState } from 'react';
+    import { View, TextInput, Button, Text } from 'react-native';
+    import { auth } from '../firebaseConfig';
+    import { signInWithEmailAndPassword } from 'firebase/auth';
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+    const LoginScreen = () => {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
 
-## Learn more
+      const handleLogin = async () => {
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+        } catch (err) {
+          setError(err.message);
+        }
+      };
 
-To learn more about developing your project with Expo, look at the following resources:
+      return (
+        <View>
+          <TextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <TextInput
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+          <Button title="Login" onPress={handleLogin} />
+          {error ? <Text>{error}</Text> : null}
+        </View>
+      );
+    };
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+    export default LoginScreen;
+    ```
 
-## Join the community
+3. **Setup Navigation:**
+    - Install React Navigation:
+    ```bash
+    npm install @react-navigation/native @react-navigation/stack
+    npm install react-native-screens react-native-safe-area-context
+    ```
+    - Configure navigation in your project:
+    ```javascript
+    // App.js
+    import React from 'react';
+    import { NavigationContainer } from '@react-navigation/native';
+    import { createStackNavigator } from '@react-navigation/stack';
+    import RegisterScreen from './screens/RegisterScreen';
+    import LoginScreen from './screens/LoginScreen';
 
-Join our community of developers creating universal apps.
+    const Stack = createStackNavigator();
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
->>>>>>> 11fe211 (Initial commit)
+    const App = () => {
+      return (
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName="Login">
+            <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      );
+    };
+
+    export default App;
+    ```
+
+#### Backend Setup
+
+1. **Create a new Node.js project:**
+    - Open a terminal and run the following commands to create a new Node.js project:
+    ```bash
+    mkdir tubonge_backend
+    cd tubonge_backend
+    npm init -y
+    ```
+
+2. **Install Express and Firebase Admin SDK:**
+    - Install the required packages:
+    ```bash
+    npm install express firebase-admin
+    ```
+    - Initialize Firebase Admin SDK in your project:
+    ```javascript
+    // firebaseAdmin.js
+    const admin = require('firebase-admin');
+    const serviceAccount = require('./path/to/serviceAccountKey.json');
+
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: 'https://YOUR_PROJECT_ID.firebaseio.com'
+    });
+
+    module.exports = admin;
+    ```
+
+3. **Create Express server:**
+    - Create a basic Express server:
+    ```javascript
+    // server.js
+    const express = require('express');
+    const admin = require('./firebaseAdmin');
+
+    const app = express();
+    const port = process.env.PORT || 3000;
+
+    app.use(express.json());
+
+    app.post('/register', async (req, res) => {
+      const { email, password } = req.body;
+      try {
+        const user = await admin.auth().createUser({
+          email,
+          password,
+        });
+        res.status(201).send(user);
+      } catch (error) {
+        res.status(400).send(error.message);
+      }
+    });
+
+    app.post('/login', async (req, res) => {
+      const { email, password } = req.body;
+      try {
+        const user = await admin.auth().getUserByEmail(email);
+        // Implement your own password verification logic here
+        res.status(200).send(user);
+      } catch (error) {
+        res.status(400).send(error.message);
+      }
+    });
+
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+    ```
+
+#### Deployment
+
+1. **Deploy the frontend to Expo:**
+    - Run the following command to publish your Expo project:
+    ```bash
+    expo publish
+    ```
+
+2. **Deploy the backend to Heroku:**
+    - Create a new Heroku app and push your code:
+    ```bash
+    heroku create tubonge-backend
+    git push heroku main
+    ```
+
+3. **Configure environment variables:**
+    - Set the required environment variables in Heroku:
+    ```bash
+    heroku config:set FIREBASE_SERVICE_ACCOUNT_KEY="$(cat path/to/serviceAccountKey.json)"
+    ```
+
+4. **Monitor and manage your deployments:**
+    - Use the Heroku dashboard to monitor and manage your backend deployment.
+    - Use the Expo dashboard to monitor and manage your frontend deployment.
+
+#### Conclusion
+
+This documentation provides a step-by-step guide to set up the "Tubonge" project, including frontend and backend setup, user authentication with Firebase, and deployment instructions. Follow these steps to get your project up and running smoothly.
