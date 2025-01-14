@@ -246,7 +246,3 @@
 4. **Monitor and manage your deployments:**
     - Use the Heroku dashboard to monitor and manage your backend deployment.
     - Use the Expo dashboard to monitor and manage your frontend deployment.
-
-#### Conclusion
-
-This documentation provides a step-by-step guide to set up the "Tubonge" project, including frontend and backend setup, user authentication with Firebase, and deployment instructions. Follow these steps to get your project up and running smoothly.
